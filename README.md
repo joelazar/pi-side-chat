@@ -4,190 +4,120 @@
 
 # pi-side-chat
 
-Fork your conversation into an independent side chat while the main agent keeps working.
+A Pi extension that forks the current conversation into a temporary side chat while the main agent keeps working.
 
+```typescript
+/side
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ Side Chat                        [Main: idle] [Read]          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ [You]: What's the difference between Effect and Promise?       │
-│                                                                 │
-│ [Assistant]: Effect is a lazy, composable description of a     │
-│ computation that may fail, require dependencies, or perform    │
-│ side effects. Unlike Promises which execute immediately...     │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│ > _                                                             │
-├─────────────────────────────────────────────────────────────────┤
-│ Esc close · Enter send · Shift+↑/↓ scroll · Alt+/ main · Ctrl+T edit │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+Open the overlay, ask a quick question, close it, and go back to what the main agent was already doing.
 
 ## Why
 
-You're deep in a refactoring task when you need to check something quick — "wait, does this API support streaming?" or "what's the syntax for that Jest matcher again?"
+This exists for the annoying in-between moments. You're in the middle of a longer task and want to ask something small without derailing the main thread: check an API detail, sanity-check an approach, inspect recent progress, or make a tiny edit off to the side.
 
-Without side chat, you either:
-- Interrupt your main agent mid-task (losing momentum)
-- Open a new terminal and start a fresh pi session (losing context)
-- Context-switch to a browser (losing focus)
+Without a side chat, you either interrupt the main agent, open a completely separate Pi session with no context, or context-switch out to the browser. None of those feel great.
 
-Side chat lets you fork the current conversation into an overlay. Ask your quick question, get your answer, close the overlay. Main agent never stopped working.
+`pi-side-chat` gives you a fork of the current conversation in an overlay. It starts with the same context, stays separate from the main thread, and disappears when you're done.
 
 ## Install
 
-The extension is already in `~/.pi/agent/extensions/pi-side-chat/`. Just restart pi.
+The extension lives in `/Users/nicobailon/.pi/agent/extensions/pi-side-chat`.
+
+Restart Pi and it will be auto-discovered.
 
 ## Quick Start
 
-**Open side chat:**
-- Press `Alt+/`, or
-- Type `/side`
+Open side chat with `Alt+/` or `/side`.
 
-**Ask your question** and press Enter.
+Ask a question and press `Enter`.
 
-**Close** with `Esc` when done.
+Press `Esc` to close it.
 
-That's it. The main agent continues working in the background.
+If you want to switch back to the main editor without closing the overlay, press `Alt+/` again.
 
-## Features
+If you need write access, press `Ctrl+T` to switch from read-only mode to full mode.
 
-### Focus Switching
+## What it does
 
-Side chat opens as a non-capturing overlay. Press `Alt+/` to toggle focus between side chat and main editor. Type in main while side chat stays visible. The border dims when unfocused.
+### Forks the current conversation
 
-### Full Tool Access
+The overlay starts with a copy of the current branch context, so the side agent already knows what you've been working on. It does not write anything back into the main conversation history.
 
-Side chat starts in read-only mode, but it can switch to the same full tool set as the main agent. Use it for quick questions by default, then toggle into edit mode when you actually need write access.
+### Starts in read-only mode
 
-### Smart Overlap Warnings
-
-If you try to modify a file the main agent has written to, you'll see a warning:
-
-```
-File Overlap
-
-Main agent has MODIFIED this file:
-  src/api/handler.ts
-
-Editing may cause conflicts or overwrite main's changes.
-
-Proceed anyway?
-```
-
-This prevents accidental conflicts. If you know what you're doing, proceed. If not, wait for the main agent to finish.
-
-### Tool Mode Toggle
-
-Side chat starts in **read-only mode** by default — safer for quick questions.
+The safe default is read-only. That makes it useful for quick questions, code reading, and checking progress without risking accidental edits.
 
 Press `Ctrl+T` to switch between:
-- **Read-only mode** — read-only tools only, no file modifications (default)
-- **Full mode** — all tools available including write/edit
+- read-only mode
+- full mode with write, edit, and bash access
 
-The footer shows what `Ctrl+T` will switch to: "Ctrl+T edit" or "Ctrl+T read-only".
+The footer always shows what `Ctrl+T` will do next.
 
-### Forked Context
+### Warns on file overlap
 
-Side chat starts with a copy of your current conversation. The agent knows what you've been working on. But changes in side chat don't affect the main conversation — it's a true fork.
+If the side chat tries to modify a file that the main agent has already touched, it asks before proceeding.
 
-### Peek at Main Agent
+```text
+File Overlap
 
-The side chat has a special `peek_main` tool that lets it see what the main agent is doing in real-time. When you ask "what's the main agent working on?" or "show me main's progress", the side agent will use this tool to fetch and summarize recent activity.
+Main agent has modified:
+  src/api/handler.ts
 
-```
-You: What's the main agent doing right now?
-
-[peek_main]
-
-The main agent is currently refactoring the authentication module.
-It just finished reading src/auth/handler.ts and is now editing
-src/auth/middleware.ts to add rate limiting...
+Editing may cause conflicts. Proceed?
 ```
 
-You can also ask for activity since you opened the side chat:
+It does not block automatically. It just makes the conflict explicit.
 
-```
-You: What has the main agent done since I opened this?
+### Can peek at the main agent
+
+The side agent gets a `peek_main` tool for reading recent activity from the main session.
+
+Useful prompts:
+
+```text
+What is the main agent doing right now?
+What changed since I opened this side chat?
+Show me the last 10 things main did.
 ```
 
-## Keyboard Shortcuts
+### Stays out of the way
+
+The overlay is non-capturing, so you can leave it visible and switch focus back to the main editor.
+
+It opens near the top of the screen so the main editor stays visible underneath.
+
+## Controls
 
 | Key | Action |
 |-----|--------|
-| `Alt+/` | Open side chat / toggle focus between side chat and main |
-| `Esc` | Close side chat |
+| `Alt+/` | Open side chat, or toggle focus between side chat and main |
 | `Enter` | Send message |
-| `Ctrl+T` | Toggle full/read-only mode |
+| `Esc` | Close side chat |
+| `Ctrl+T` | Toggle read-only / full mode |
 | `PgUp` / `Shift+↑` | Scroll up |
 | `PgDn` / `Shift+↓` | Scroll down |
 
-**Focus switching:** When side chat is open, `Alt+/` toggles focus between side chat and main editor. You can type in main while side chat remains visible, then switch back.
+## Command reference
 
-## Commands
+### `/side`
 
-| Command | Description |
-|---------|-------------|
-| `/side` | Open side chat (same as Alt+/) |
+Opens the side chat overlay.
 
-## How It Works
+### `peek_main`
 
-When you open side chat:
+Available to the side agent only.
 
-1. **Fork context** — Current messages are deep-cloned (JSON round-trip)
-2. **Create agent** — A new Agent instance with forked messages and wrapped tools
-3. **Track activity** — Main agent's file operations are tracked via `tool_execution_start` events
-4. **Wrap tools** — Side chat's write tools check for overlap before executing
-5. **Add peek_main** — Special tool that reads live data from main session
-6. **Show overlay** — TUI overlay with message display, editor, and controls
+Parameters:
 
-The side chat agent is fully independent. It has its own streaming state, tool execution, and message history. The main agent keeps working — you'll see "[Main: N files]" in the header showing how many files it's touched. The side agent can use `peek_main` to see what the main agent is currently doing.
-
-## Architecture
-
-```
-Main Agent ──tool_execution_start──► FileActivityTracker (Set of written paths)
-                                              │
-SessionManager ◄───────────────────┐          │
-       │                           │          │
-       │ (live read via peek_main) │          ▼
-       │                     ┌─────┴──────────────────┐
-       └────────────────────►│    SideChatOverlay     │
-                             │  ┌─────────┐ ┌──────┐  │
-                             │  │  Agent  │ │Editor│  │
-                             │  └────┬────┘ └──────┘  │
-                             │       ▼                │
-                             │  SideChatMessages      │
-                             └────────────────────────┘
-```
-
-## File Structure
-
-```
-~/.pi/agent/extensions/pi-side-chat/
-├── index.ts               # Extension entry, registers shortcut + command
-├── side-chat-overlay.ts   # Overlay UI, Agent instance, peek_main tool
-├── side-chat-messages.ts  # Scrollable message display
-├── file-activity-tracker.ts  # Tracks files main has written (Set-based)
-├── tool-wrapper.ts        # Wraps write tools with overlap check
-└── README.md
-```
-
-~770 lines of TypeScript total.
-
-## Limitations
-
-- **Single side chat** — Only one side chat at a time. Close it before opening another.
-- **No overlay stacking** — If another visible overlay is open, side chat won't open until you close or background it.
-- **Ephemeral** — Side chat conversations aren't saved. When you close the overlay, it's gone.
-- **No merge back** — Changes in side chat don't merge into main conversation history.
-- **Bash heuristics** — Overlap detection for bash commands uses regex patterns. It catches `rm`, `cp`, `mv`, `touch`, `tee`, and redirects, but not every possible file operation (e.g., `sed -i`, Python file writes).
-- **Peek is on-demand** — The `peek_main` tool fetches main agent activity when called, not continuously. For real-time streaming of main's output, you'd need to watch the main terminal.
+| Param | Type | Description |
+|------|------|-------------|
+| `lines` | integer | Max number of recent items to inspect, default `20`, max `50` |
+| `since_fork` | boolean | If `true`, only show activity after the side chat was opened |
 
 ## Configuration
 
-Create `~/.pi/agent/extensions/pi-side-chat/config.json`:
+Create `/Users/nicobailon/.pi/agent/extensions/pi-side-chat/config.json` if you want a different shortcut.
 
 ```json
 {
@@ -195,10 +125,32 @@ Create `~/.pi/agent/extensions/pi-side-chat/config.json`:
 }
 ```
 
-**Options:**
+## How it works
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `shortcut` | `"alt+/"` | Keyboard shortcut to open/toggle side chat |
+When you open side chat, the extension clones the current session context, creates a separate agent instance, and renders it in a TUI overlay. The main agent keeps running on its own branch.
 
-Shortcut format: `ctrl+shift+x`, `alt+/`, `ctrl+k`, etc. Restart pi after changing.
+The extension also listens for main-agent tool execution events and keeps a small in-memory set of paths that have been written. When side chat is in full mode, its write-capable tools are wrapped so they can warn before touching one of those paths.
+
+`peek_main` reads the current session branch on demand, formats the recent messages, and returns a compact summary back to the side agent.
+
+## File layout
+
+```text
+pi-side-chat/
+├── index.ts
+├── side-chat-overlay.ts
+├── side-chat-messages.ts
+├── file-activity-tracker.ts
+├── tool-wrapper.ts
+├── banner.png
+└── README.md
+```
+
+## Limitations
+
+- Only one side chat can be open at a time.
+- Side chat will not open on top of another visible overlay.
+- The conversation is ephemeral. Closing the overlay discards it.
+- Side chat does not merge messages back into the main thread.
+- Bash overlap detection is heuristic. It catches common write cases, not every possible shell write.
+- `peek_main` is on-demand, not a live streaming view.

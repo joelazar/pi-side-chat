@@ -22,7 +22,9 @@ Without a side chat, you either interrupt the main agent, open a completely sepa
 
 ## Install
 
-The extension lives in `/Users/nicobailon/.pi/agent/extensions/pi-side-chat`.
+```bash
+pi install npm:pi-side-chat
+```
 
 Restart Pi and it will be auto-discovered.
 

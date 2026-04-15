@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4] - 2026-04-15
+
+- Fixed npm packaging so pi installs the extension source files correctly
+- Added pi package manifest metadata and corrected preview video metadata
+- Switched local TypeScript imports to `.ts` specifiers for source-based loading
+
 ## [0.1.3] - 2026-03-15
 
 - Added demo video to README and package.json

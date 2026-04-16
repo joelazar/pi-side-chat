@@ -19,7 +19,9 @@ You're in the middle of a longer task and want to ask something small without de
 
 ## Quick Start
 
-Open side chat with `Alt+/` or `/side`. Ask a question and press `Enter`.
+Open side chat with `Alt+/` or `/btw`. Ask a question and press `Enter`.
+
+Use `/btw <question>` to open it and send the question immediately.
 
 Press `Esc` to close it. Reopen with `Alt+/` to continue where you left off.
 
@@ -68,9 +70,11 @@ What changed since I opened this side chat?
 
 ## Command Reference
 
-### `/side`
+### `/btw`
 
 Opens the side chat overlay.
+
+`/btw <question>` opens it and sends the question immediately.
 
 ### `peek_main`
 

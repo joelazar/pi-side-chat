@@ -33,6 +33,7 @@ interface SideChatOverlayOptions {
   modelRegistry: ModelRegistry;
   sessionManager: SessionManager;
   shortcut: string;
+  initialPrompt?: string;
   onOverlapWarning: (path: string) => Promise<boolean>;
   onUnfocus: () => void;
   onClose: (action: "close" | "refork" | "clear", messages: AgentMessage[]) => void;
@@ -97,6 +98,12 @@ export class SideChatOverlay implements Component, Focusable {
     this.messages.setMessages(forkedMessages);
     this.editor = new Editor(tui, { borderColor: (t) => theme.fg("borderMuted", t), selectList: getSelectListTheme() }, { paddingX: 0 });
     this.editor.onSubmit = (text) => this.handleSubmit(text);
+
+    if (options.initialPrompt?.trim()) {
+      queueMicrotask(() => {
+        void this.submitPrompt(options.initialPrompt!);
+      });
+    }
   }
 
   private createPeekMainTool(sessionManager: SessionManager): AgentTool {
@@ -166,6 +173,10 @@ export class SideChatOverlay implements Component, Focusable {
     clearInterval(this.spinnerInterval);
     this.spinnerInterval = null;
     this.messages.setToolStatus("");
+  }
+
+  async submitPrompt(text: string) {
+    return this.handleSubmit(text);
   }
 
   private async handleSubmit(text: string) {

@@ -72,7 +72,11 @@ export default function sideChatExtension(pi: ExtensionAPI) {
     return openSideChat(ctx);
   };
 
-  const openSideChat = async (ctx: ExtensionContext, clear = false) => {
+  const openSideChat = async (
+    ctx: ExtensionContext,
+    clear = false,
+    initialPrompt?: string,
+  ) => {
     if (!ctx.model) {
       ctx.ui.notify("Cannot open side chat: no model configured", "error");
       return;
@@ -106,6 +110,7 @@ export default function sideChatExtension(pi: ExtensionAPI) {
             modelRegistry: ctx.modelRegistry,
             sessionManager: ctx.sessionManager,
             shortcut: config.shortcut,
+            initialPrompt,
             onOverlapWarning: (path) => showOverlapWarning(ctx.ui, path),
             onUnfocus: () => overlayHandle?.unfocus(),
             onClose: (action, messages) => {
@@ -149,9 +154,23 @@ export default function sideChatExtension(pi: ExtensionAPI) {
     handler: toggleSideChat,
   });
 
-  pi.registerCommand("side", {
-    description: "Open side chat (fork conversation)",
-    handler: (_, ctx) => toggleSideChat(ctx),
+  pi.registerCommand("btw", {
+    description: "Open side chat. `/btw <text>` opens it and sends the message immediately.",
+    handler: async (args: string, ctx: ExtensionContext) => {
+      const prompt = args.trim();
+      if (!prompt) {
+        await toggleSideChat(ctx);
+        return;
+      }
+
+      if (activeOverlay) {
+        overlayHandle?.focus();
+        await activeOverlay.submitPrompt(prompt);
+        return;
+      }
+
+      await openSideChat(ctx, false, prompt);
+    },
   });
 }
 
